@@ -17,7 +17,7 @@
 .controls {
   display: flex;
 
-  button + button {
+  button+button {
     margin-left: 0.5rem;
   }
 }

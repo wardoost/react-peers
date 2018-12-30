@@ -4,6 +4,5 @@
   "rules": {
     "jsx-no-lambda": false,
     "import-name": false
-  },
-  "rulesDirectory": []
+  }
 }

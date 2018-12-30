@@ -3,11 +3,11 @@
   flex-direction: column;
   align-items: center;
 
-  label > input {
+  label>input {
     margin-left: 0.6rem;
   }
 
-  > * + * {
+  >*+* {
     margin-top: 0.4rem;
   }
 }
@@ -15,4 +15,16 @@
 .container {
   padding: 0.8rem;
   background-color: whitesmoke;
+}
+
+.streams {
+  display: flex;
+  flex-direction: column;
+
+  video {
+    width: 100%;
+    max-width: 320px;
+    margin: 0.8rem auto;
+    background-color: black;
+  }
 }
