@@ -1,0 +1,23 @@
+.container {
+  display: flex;
+  flex-direction: column;
+}
+
+.messages {
+  padding: 0.4rem;
+  color: whitesmoke;
+  background-color: black;
+  margin: 0.8rem 0;
+}
+
+.message {
+  display: block;
+}
+
+.controls {
+  display: flex;
+
+  button + button {
+    margin-left: 0.5rem;
+  }
+}
