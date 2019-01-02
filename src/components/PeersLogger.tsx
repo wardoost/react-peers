@@ -49,7 +49,7 @@ export default class PeersLogger extends React.Component<Props, State> {
     this.setState({
       connectionId: connection.id,
       connecting: !connection.open,
-      messages: [`📡 Connecting to ${connection.peer}...`]
+      messages: [`📡 Connecting to ${connection.peer}...`],
     })
 
     connection.on('data', (data: any) => {

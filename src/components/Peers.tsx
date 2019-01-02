@@ -41,7 +41,7 @@ export default class Peers extends React.Component<Props, State> {
     connecting: false,
     connection: undefined,
     calling: false,
-    message: ''
+    message: '',
   }
 
   constructor(props: Props) {
@@ -55,7 +55,7 @@ export default class Peers extends React.Component<Props, State> {
       this.peer.destroy()
       this.peer = this.initialisePeer(this.props.id)
 
-      this.setState({id: this.state.id})
+      this.setState({ id: this.state.id })
     }
   }
 
@@ -81,7 +81,7 @@ export default class Peers extends React.Component<Props, State> {
         console.log('🍐 connection', connection)
       }
 
-      this.setState({connection, peerError: undefined })
+      this.setState({ connection, peerError: undefined })
     })
 
     peer.on('disconnected', () => {
@@ -99,7 +99,7 @@ export default class Peers extends React.Component<Props, State> {
         console.log('🍐 error', error)
       }
 
-      this.setState({peerError: error})
+      this.setState({ peerError: error })
 
       if (this.props.onError) {
         this.props.onError(error)
@@ -142,7 +142,7 @@ export default class Peers extends React.Component<Props, State> {
   handleCall = () => {
     if (this.peer && this.props.peerId) {
       const connection = this.peer.connect(this.props.peerId)
-      this.setState({connection})
+      this.setState({ connection })
 
       navigator.getUserMedia(
         { video: true, audio: true },
@@ -175,7 +175,6 @@ export default class Peers extends React.Component<Props, State> {
         const videoNodeIn = this.streamIn.current!
         const videoNodeOut = this.streamOut.current!
 
-
         try {
           videoNodeOut.srcObject = stream
         } catch (error) {
@@ -202,10 +201,10 @@ export default class Peers extends React.Component<Props, State> {
       console.log('🍐 send message', this.state.connection, this.state.message)
     }
 
-    const {connection, message} = this.state
+    const { connection, message } = this.state
 
     if (connection && message) {
-      (connection as Connection).send(message)
+      ;(connection as Connection).send(message)
       this.setState({ message: '' })
     }
   }
@@ -230,17 +229,29 @@ export default class Peers extends React.Component<Props, State> {
         </div>
         <PeersLogger connection={this.state.connection} />
         <div className={styles.streams}>
-          <video className={styles.streamIn} ref={this.streamIn} autoPlay={true} />
-          <video className={styles.streamOut} ref={this.streamOut} autoPlay={true} />
-        </div>
-        {this.state.connection && <form onSubmit={this.sendMessage}>
-          <input
-            type="text"
-            value={this.state.message}
-            onChange={this.handleMessageChange}
+          <video
+            className={styles.streamIn}
+            ref={this.streamIn}
+            autoPlay={true}
+            playsinline={true}
           />
-          <input type="submit" value="Send" />
-        </form>}
+          <video
+            className={styles.streamOut}
+            ref={this.streamOut}
+            autoPlay={true}
+            playsinline={true}
+          />
+        </div>
+        {this.state.connection && (
+          <form onSubmit={this.sendMessage}>
+            <input
+              type="text"
+              value={this.state.message}
+              onChange={this.handleMessageChange}
+            />
+            <input type="submit" value="Send" />
+          </form>
+        )}
       </>
     )
   }

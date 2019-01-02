@@ -38,9 +38,7 @@ export default class App extends React.Component<{}, State> {
       case 'id':
         return (
           <div className={styles.container}>
-            <div className={styles.heading}>
-              Choose a username
-            </div>
+            <div className={styles.heading}>Choose a username</div>
             <form onSubmit={this.goToStep('peer')} className={styles.form}>
               <label>
                 Your id
@@ -58,9 +56,7 @@ export default class App extends React.Component<{}, State> {
       case 'peer':
         return (
           <div className={styles.container}>
-            <div className={styles.heading}>
-              Who are you connecting to?
-            </div>
+            <div className={styles.heading}>Who are you connecting to?</div>
             <form onSubmit={this.goToStep('connect')} className={styles.form}>
               <label>
                 Peer id
