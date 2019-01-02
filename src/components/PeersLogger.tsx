@@ -1,6 +1,6 @@
-import * as React from 'react'
+import React from 'react'
 
-import * as styles from './ConnectionMessager.scss'
+import styles from './PeersLogger.scss'
 
 interface Props {
   connection: any
@@ -9,15 +9,13 @@ interface Props {
 interface State {
   connectionId: string
   connecting: boolean
-  message: string
   messages: string[]
 }
 
-export default class ConnectionMessager extends React.Component<Props, State> {
+export default class PeersLogger extends React.Component<Props, State> {
   state = {
     connectionId: '',
     connecting: false,
-    message: '',
     messages: [],
   }
 
@@ -54,9 +52,9 @@ export default class ConnectionMessager extends React.Component<Props, State> {
       messages: [`📡 Connecting to ${connection.peer}...`]
     })
 
-    connection.on('data', (data: string) => {
+    connection.on('data', (data: any) => {
       this.setState(prevState => ({
-        messages: [...prevState.messages, data],
+        messages: [...prevState.messages, String(data)],
       }))
     })
 
@@ -83,17 +81,6 @@ export default class ConnectionMessager extends React.Component<Props, State> {
     })
   }
 
-  sendMessage = (event: React.FormEvent<HTMLElement>) => {
-    event.preventDefault()
-
-    this.props.connection.send(this.state.message)
-    this.setState({ message: '' })
-  }
-
-  handleMessageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ message: event.target.value })
-  }
-
   render() {
     return (
       <div className={styles.container}>
@@ -106,14 +93,6 @@ export default class ConnectionMessager extends React.Component<Props, State> {
                 </span>
               ))}
         </code>
-        <form onSubmit={this.sendMessage}>
-          <input
-            type="text"
-            value={this.state.message}
-            onChange={this.handleMessageChange}
-          />
-          <input type="submit" value="Send" />
-        </form>
       </div>
     )
   }

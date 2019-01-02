@@ -2,7 +2,7 @@
   "name": "react-peers",
   "version": "0.1.0",
   "scripts": {
-    "start": "parcel ./src/index.html",
+    "start": "parcel ./src/index.html --https",
     "prebuild": "rm -rf .cache dist && tsc --noEmit",
     "build": "parcel build ./src/index.html --public-url '/'",
     "prettify": "prettier --write './src/**/*.{ts,tsx}'"
