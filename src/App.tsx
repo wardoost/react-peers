@@ -76,7 +76,7 @@ export default class App extends React.Component<{}, State> {
       default:
         return (
           <>
-            <div>
+            <div className={styles.heading}>
               <strong>{this.state.id}</strong> connected to{' '}
               <strong>{this.state.peerId}</strong>
             </div>

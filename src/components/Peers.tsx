@@ -217,15 +217,14 @@ export default class Peers extends React.Component<Props, State> {
     return (
       <>
         <div className={styles.toolbar}>
-          <div>
-            {this.state.peerError && (
-              <button onClick={this.handleRetry}>Retry</button>
-            )}
-            {this.state.calling && (
-              <button onClick={this.handleAnswer}>Answer</button>
-            )}
-          </div>
-          <button onClick={this.handleCall}>Call {this.props.peerId}</button>
+          {this.state.peerError && (
+            <button onClick={this.handleRetry}>Retry</button>
+          )}
+          {this.state.calling ? (
+            <button onClick={this.handleAnswer}>Answer</button>
+          ) : (
+            <button onClick={this.handleCall}>Call {this.props.peerId}</button>
+          )}
         </div>
         <PeersLogger connection={this.state.connection} />
         <div className={styles.streams}>
@@ -233,13 +232,14 @@ export default class Peers extends React.Component<Props, State> {
             className={styles.streamIn}
             ref={this.streamIn}
             autoPlay={true}
-            playsinline={true}
+            playsInline={true}
           />
           <video
             className={styles.streamOut}
             ref={this.streamOut}
             autoPlay={true}
-            playsinline={true}
+            playsInline={true}
+            muted={true}
           />
         </div>
         {this.state.connection && (
