@@ -214,17 +214,33 @@ export default class Peers extends React.Component<Props, State> {
   render() {
     return (
       <>
-        <div className={styles.toolbar}>
-          {this.state.peerError && (
-            <button onClick={this.handleRetry}>Retry</button>
-          )}
-          {this.state.calling ? (
-            <button onClick={this.handleAnswer}>Answer</button>
-          ) : (
-            <button onClick={this.handleCall}>Call {this.props.peerId}</button>
-          )}
+        <div className={styles.controls}>
+          <p>
+            <strong>{this.props.id}</strong> connected to{' '}
+            <strong>{this.props.peerId}</strong>
+          </p>
+          <div className={styles.toolbar}>
+            {this.state.peerError && (
+              <button onClick={this.handleRetry}>Retry</button>
+            )}
+            {this.state.calling ? (
+              <button onClick={this.handleAnswer}>Answer</button>
+            ) : (
+              <button onClick={this.handleCall}>Call {this.props.peerId}</button>
+            )}
+          </div>
+          <PeersLogger connection={this.state.connection} />
         </div>
-        <PeersLogger connection={this.state.connection} />
+        {/* {this.state.connection && (
+          <form onSubmit={this.sendMessage}>
+            <input
+              type="text"
+              value={this.state.message}
+              onChange={this.handleMessageChange}
+            />
+            <input type="submit" value="Send" />
+          </form>
+        )} */}
         <div className={styles.streams}>
           <video
             className={styles.streamIn}
@@ -240,16 +256,6 @@ export default class Peers extends React.Component<Props, State> {
             muted={true}
           />
         </div>
-        {this.state.connection && (
-          <form onSubmit={this.sendMessage}>
-            <input
-              type="text"
-              value={this.state.message}
-              onChange={this.handleMessageChange}
-            />
-            <input type="submit" value="Send" />
-          </form>
-        )}
       </>
     )
   }

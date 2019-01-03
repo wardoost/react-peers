@@ -1,6 +1,7 @@
 .container {
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 .messages {
@@ -15,6 +16,7 @@
 
 .controls {
   display: flex;
+  width: 100%;
 
   button+button {
     margin-left: 0.5rem;
