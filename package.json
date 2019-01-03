@@ -5,7 +5,8 @@
     "start": "parcel ./src/index.html --https",
     "prebuild": "rm -rf .cache dist && tsc --noEmit",
     "build": "parcel build ./src/index.html --public-url '/'",
-    "prettify": "prettier --write './src/**/*.{ts,tsx}'"
+    "format": "prettier --write './src/**/*.{ts,tsx}'",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/react": "^16.7.18",
