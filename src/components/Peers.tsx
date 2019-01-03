@@ -12,22 +12,18 @@ interface Props {
   onError?: (error: any) => void
 }
 
-interface Connection {
-  send: (data: any) => void
-}
-
 interface State {
   id: string
   peerError?: Error
   connecting: boolean
-  connection?: Connection
+  connection?: Peer.DataConnection
   calling: boolean
   message: string
 }
 
 export default class Peers extends React.Component<Props, State> {
   private peer: Peer
-  private mediaConnection: any
+  private mediaConnection: Peer.MediaConnection | undefined = undefined
   private streamIn = React.createRef<HTMLVideoElement>()
   private streamOut = React.createRef<HTMLVideoElement>()
 
@@ -181,10 +177,12 @@ export default class Peers extends React.Component<Props, State> {
           videoNodeOut.src = URL.createObjectURL(stream)
         }
 
-        this.mediaConnection.answer(stream) // Answer the call with an A/V stream.
-        this.mediaConnection.on('stream', (remoteStream: any) => {
-          videoNodeIn.srcObject = remoteStream
-        })
+        if (this.mediaConnection) {
+          this.mediaConnection.answer(stream) // Answer the call with an A/V stream.
+          this.mediaConnection.on('stream', (remoteStream: any) => {
+            videoNodeIn.srcObject = remoteStream
+          })
+        }
 
         this.setState({ calling: false })
       },
@@ -204,7 +202,7 @@ export default class Peers extends React.Component<Props, State> {
     const { connection, message } = this.state
 
     if (connection && message) {
-      ;(connection as Connection).send(message)
+      ;(connection as Peer.DataConnection).send(message)
       this.setState({ message: '' })
     }
   }

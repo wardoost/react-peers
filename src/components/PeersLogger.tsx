@@ -1,28 +1,29 @@
 import React from 'react'
+import Peer from 'peerjs'
 
 import styles from './PeersLogger.scss'
 
 interface Props {
-  connection: any
+  connection?: Peer.DataConnection
 }
 
 interface State {
-  connectionId: string
+  connectionLabel: string
   connecting: boolean
   messages: string[]
 }
 
 export default class PeersLogger extends React.Component<Props, State> {
   state = {
-    connectionId: '',
+    connectionLabel: '',
     connecting: false,
     messages: [],
   }
 
   static getDerivedStateFromProps(props: Props, state: State) {
-    if (props.connection && props.connection.id !== state.connectionId) {
+    if (props.connection && props.connection.label !== state.connectionLabel) {
       return {
-        connectionId: props.connection.id,
+        connectionLabel: props.connection.label,
         connecting: true,
       }
     }
@@ -39,7 +40,7 @@ export default class PeersLogger extends React.Component<Props, State> {
   componentDidUpdate() {
     if (
       this.props.connection &&
-      this.props.connection.id !== this.state.connectionId
+      this.props.connection.label !== this.state.connectionLabel
     ) {
       this.initialiseConnection(this.props.connection)
     }
@@ -47,7 +48,7 @@ export default class PeersLogger extends React.Component<Props, State> {
 
   initialiseConnection = (connection: any) => {
     this.setState({
-      connectionId: connection.id,
+      connectionLabel: connection.label,
       connecting: !connection.open,
       messages: [`📡 Connecting to ${connection.peer}...`],
     })
@@ -82,6 +83,7 @@ export default class PeersLogger extends React.Component<Props, State> {
   }
 
   render() {
+    console.log(this.props)
     return (
       <div className={styles.container}>
         <code className={styles.messages}>
