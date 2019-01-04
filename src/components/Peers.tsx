@@ -24,8 +24,10 @@ interface State {
 export default class Peers extends React.Component<Props, State> {
   private peer: Peer
   private mediaConnection: Peer.MediaConnection | undefined = undefined
-  private streamIn = React.createRef<HTMLVideoElement>()
-  private streamOut = React.createRef<HTMLVideoElement>()
+  private videoStreamIn = React.createRef<HTMLVideoElement>()
+  private videoStreamOut = React.createRef<HTMLVideoElement>()
+  private streamIn: any
+  private streamOut: any
 
   static defaultProps = {
     logging: false,
@@ -46,6 +48,10 @@ export default class Peers extends React.Component<Props, State> {
     this.peer = this.initialisePeer(props.id)
   }
 
+  componentDidMount() {
+    this.initialiseStreamOut()
+  }
+
   componentDidUpdate() {
     if (this.props.id !== this.state.id) {
       this.peer.destroy()
@@ -59,6 +65,26 @@ export default class Peers extends React.Component<Props, State> {
     if (!this.peer || !this.peer.destroyed) {
       this.peer.destroy()
     }
+  }
+
+  initialiseStreamOut = () => {
+    navigator.getUserMedia(
+      { video: true, audio: true },
+      streamOut => {
+        const videoNodeOut = this.videoStreamOut.current!
+
+        try {
+          videoNodeOut.srcObject = streamOut
+        } catch (error) {
+          videoNodeOut.src = URL.createObjectURL(streamOut)
+        }
+        
+        this.streamOut = streamOut
+      },
+      error => {
+        console.log('Failed to get local stream', error)
+      }
+    )
   }
 
   initialisePeer = (id: string) => {
@@ -136,60 +162,30 @@ export default class Peers extends React.Component<Props, State> {
   }
 
   handleCall = () => {
-    if (this.peer && this.props.peerId) {
+    if (this.peer && this.props.peerId && this.streamOut) {
       const connection = this.peer.connect(this.props.peerId)
       this.setState({ connection })
 
-      navigator.getUserMedia(
-        { video: true, audio: true },
-        stream => {
-          const videoNodeIn = this.streamIn.current!
-          const videoNodeOut = this.streamOut.current!
+      const videoNodeIn = this.videoStreamIn.current!
+      const call = this.peer.call(this.props.peerId, this.streamOut)
 
-          try {
-            videoNodeOut.srcObject = stream
-          } catch (error) {
-            videoNodeOut.src = URL.createObjectURL(stream)
-          }
-          const call = this.peer.call(this.props.peerId, stream)
-
-          call.on('stream', (remoteStream: any) => {
-            videoNodeIn.srcObject = remoteStream
-          })
-        },
-        error => {
-          console.log('Failed to get local stream', error)
-        }
-      )
+      call.on('stream', (remoteStream: any) => {
+        videoNodeIn.srcObject = remoteStream
+      })
     }
   }
 
   handleAnswer = () => {
-    navigator.getUserMedia(
-      { video: true, audio: true },
-      stream => {
-        const videoNodeIn = this.streamIn.current!
-        const videoNodeOut = this.streamOut.current!
+    const videoNodeIn = this.videoStreamIn.current!
 
-        try {
-          videoNodeOut.srcObject = stream
-        } catch (error) {
-          videoNodeOut.src = URL.createObjectURL(stream)
-        }
+    if (this.mediaConnection) {
+      this.mediaConnection.answer(this.streamOut) // Answer the call with an A/V stream.
+      this.mediaConnection.on('stream', (remoteStream: any) => {
+        videoNodeIn.srcObject = remoteStream
+      })
+    }
 
-        if (this.mediaConnection) {
-          this.mediaConnection.answer(stream) // Answer the call with an A/V stream.
-          this.mediaConnection.on('stream', (remoteStream: any) => {
-            videoNodeIn.srcObject = remoteStream
-          })
-        }
-
-        this.setState({ calling: false })
-      },
-      (error: any) => {
-        console.log('Failed to get local stream', error)
-      }
-    )
+    this.setState({ calling: false })
   }
 
   sendMessage = (event: React.FormEvent<HTMLElement>) => {
@@ -244,13 +240,13 @@ export default class Peers extends React.Component<Props, State> {
         <div className={styles.streams}>
           <video
             className={styles.streamIn}
-            ref={this.streamIn}
+            ref={this.videoStreamIn}
             autoPlay={true}
             playsInline={true}
           />
           <video
             className={styles.streamOut}
-            ref={this.streamOut}
+            ref={this.videoStreamOut}
             autoPlay={true}
             playsInline={true}
             muted={true}
