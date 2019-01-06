@@ -46,7 +46,7 @@ export default class PeersLogger extends React.Component<Props, State> {
     }
   }
 
-  initialiseConnection = (connection: any) => {
+  initialiseConnection = (connection: Peer.DataConnection) => {
     this.setState({
       connectionLabel: connection.label,
       connecting: !connection.open,
@@ -59,7 +59,7 @@ export default class PeersLogger extends React.Component<Props, State> {
       }))
     })
 
-    connection.on('error', (error: any) => {
+    connection.on('error', (error: Error) => {
       this.setState(prevState => ({
         messages: [
           ...prevState.messages,
@@ -83,7 +83,6 @@ export default class PeersLogger extends React.Component<Props, State> {
   }
 
   render() {
-    console.log(this.props)
     return (
       <div className={styles.container}>
         <code className={styles.messages}>

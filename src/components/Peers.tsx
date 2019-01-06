@@ -1,6 +1,7 @@
 import React from 'react'
 import Peer from 'peerjs'
 
+import Video from './Video'
 import PeersLogger from './PeersLogger'
 import styles from './Peers.scss'
 
@@ -9,37 +10,37 @@ interface Props {
   peerId: string
   logging: boolean
   onClose?: () => void
-  onError?: (error: any) => void
+  onError?: (error: Error) => void
 }
 
 interface State {
-  id: string
   peerError?: Error
   connecting: boolean
   connection?: Peer.DataConnection
+  incomingCall: boolean
   calling: boolean
   message: string
+  localStream?: MediaStream
+  remoteStream?: MediaStream
 }
 
 export default class Peers extends React.Component<Props, State> {
   private peer: Peer
   private mediaConnection: Peer.MediaConnection | undefined = undefined
-  private videoStreamIn = React.createRef<HTMLVideoElement>()
-  private videoStreamOut = React.createRef<HTMLVideoElement>()
-  private streamIn: any
-  private streamOut: any
 
   static defaultProps = {
     logging: false,
   }
 
   state = {
-    id: '',
     peerError: undefined,
     connecting: false,
     connection: undefined,
+    incomingCall: false,
     calling: false,
     message: '',
+    localStream: undefined,
+    remoteStream: undefined,
   }
 
   constructor(props: Props) {
@@ -49,15 +50,13 @@ export default class Peers extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    this.initialiseStreamOut()
+    this.initialiselocalStream()
   }
 
-  componentDidUpdate() {
-    if (this.props.id !== this.state.id) {
+  componentDidUpdate(prevProps: Props) {
+    if (this.props.id !== prevProps.id) {
       this.peer.destroy()
       this.peer = this.initialisePeer(this.props.id)
-
-      this.setState({ id: this.state.id })
     }
   }
 
@@ -67,19 +66,11 @@ export default class Peers extends React.Component<Props, State> {
     }
   }
 
-  initialiseStreamOut = () => {
+  initialiselocalStream = () => {
     navigator.getUserMedia(
       { video: true, audio: true },
-      streamOut => {
-        const videoNodeOut = this.videoStreamOut.current!
-
-        try {
-          videoNodeOut.srcObject = streamOut
-        } catch (error) {
-          videoNodeOut.src = URL.createObjectURL(streamOut)
-        }
-        
-        this.streamOut = streamOut
+      (localStream: MediaStream) => {
+        this.setState({ localStream })
       },
       error => {
         console.log('Failed to get local stream', error)
@@ -94,11 +85,9 @@ export default class Peers extends React.Component<Props, State> {
       if (this.props.logging) {
         console.log('🍐 open', id)
       }
-
-      this.setState({ id })
     })
 
-    peer.on('connection', (connection: any) => {
+    peer.on('connection', (connection: Peer.DataConnection) => {
       if (this.props.logging) {
         console.log('🍐 connection', connection)
       }
@@ -116,7 +105,7 @@ export default class Peers extends React.Component<Props, State> {
       }
     })
 
-    peer.on('error', (error: any) => {
+    peer.on('error', (error: Error) => {
       if (this.props.logging) {
         console.log('🍐 error', error)
       }
@@ -140,14 +129,14 @@ export default class Peers extends React.Component<Props, State> {
       })
     }
 
-    peer.on('call', (mediaConnection: any) => {
+    peer.on('call', (mediaConnection: Peer.MediaConnection) => {
       if (this.props.logging) {
         console.log('🍐 call', mediaConnection)
       }
 
       this.mediaConnection = mediaConnection
 
-      this.setState({ calling: true })
+      this.setState({ incomingCall: true })
     })
 
     if (this.props.logging) {
@@ -162,30 +151,28 @@ export default class Peers extends React.Component<Props, State> {
   }
 
   handleCall = () => {
-    if (this.peer && this.props.peerId && this.streamOut) {
+    if (this.peer && this.props.peerId && this.state.localStream) {
       const connection = this.peer.connect(this.props.peerId)
       this.setState({ connection })
 
-      const videoNodeIn = this.videoStreamIn.current!
-      const call = this.peer.call(this.props.peerId, this.streamOut)
+      this.setState({ calling: true })
+      const call = this.peer.call(this.props.peerId, this.state.localStream)
 
-      call.on('stream', (remoteStream: any) => {
-        videoNodeIn.srcObject = remoteStream
+      call.on('stream', (remoteStream: MediaStream) => {
+        this.setState({ remoteStream })
       })
     }
   }
 
   handleAnswer = () => {
-    const videoNodeIn = this.videoStreamIn.current!
-
     if (this.mediaConnection) {
-      this.mediaConnection.answer(this.streamOut) // Answer the call with an A/V stream.
-      this.mediaConnection.on('stream', (remoteStream: any) => {
-        videoNodeIn.srcObject = remoteStream
+      this.mediaConnection.answer(this.state.localStream) // Answer the call with an A/V stream.
+      this.mediaConnection.on('stream', (remoteStream: MediaStream) => {
+        this.setState({ remoteStream })
       })
     }
 
-    this.setState({ calling: false })
+    this.setState({ incomingCall: false, calling: true })
   }
 
   sendMessage = (event: React.FormEvent<HTMLElement>) => {
@@ -219,11 +206,13 @@ export default class Peers extends React.Component<Props, State> {
             {this.state.peerError && (
               <button onClick={this.handleRetry}>Retry</button>
             )}
-            {this.state.calling ? (
+            {this.state.incomingCall ? (
               <button onClick={this.handleAnswer}>Answer</button>
-            ) : (
-              <button onClick={this.handleCall}>Call {this.props.peerId}</button>
-            )}
+            ) : !this.state.calling ? (
+              <button onClick={this.handleCall}>
+                Call {this.props.peerId}
+              </button>
+            ) : null}
           </div>
           <PeersLogger connection={this.state.connection} />
         </div>
@@ -238,15 +227,15 @@ export default class Peers extends React.Component<Props, State> {
           </form>
         )} */}
         <div className={styles.streams}>
-          <video
-            className={styles.streamIn}
-            ref={this.videoStreamIn}
+          <Video
+            className={styles.remoteStream}
+            stream={this.state.remoteStream}
             autoPlay={true}
             playsInline={true}
           />
-          <video
-            className={styles.streamOut}
-            ref={this.videoStreamOut}
+          <Video
+            className={styles.localStream}
+            stream={this.state.localStream}
             autoPlay={true}
             playsInline={true}
             muted={true}
